@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Business Card</title>
+    <link href="css/style.css" rel="stylesheet">
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="min-h-screen bg-gradient-to-b from-primary to-secondary">
+    <div class="min-h-screen flex flex-col">
+        <!-- Main Content -->
+        <main class="flex-grow flex flex-col items-center justify-center p-6 text-white">
+            <!-- Profile Section -->
+            <div class="w-full max-w-sm bg-white/10 backdrop-blur-lg rounded-2xl p-8 mb-8 text-center">
+                <div class="w-32 h-32 mx-auto mb-6 rounded-full bg-white/20 flex items-center justify-center">
+                    <i class="fas fa-user text-5xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold mb-2">John Doe</h1>
+                <p class="text-lg mb-4">Full Stack Developer</p>
+                <div class="flex justify-center space-x-4 mb-6">
+                    <a href="#" class="text-white hover:text-gray-200">
+                        <i class="fab fa-linkedin text-xl"></i>
+                    </a>
+                    <a href="#" class="text-white hover:text-gray-200">
+                        <i class="fab fa-github text-xl"></i>
+                    </a>
+                    <a href="#" class="text-white hover:text-gray-200">
+                        <i class="fab fa-twitter text-xl"></i>
+                    </a>
+                </div>
+                <p class="text-sm text-white/80">
+                    <i class="fas fa-envelope mr-2"></i>john.doe@example.com
+                </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="w-full max-w-sm space-y-4">
+                <a href="#" class="block w-full bg-white text-primary py-4 px-6 rounded-xl font-semibold text-center hover:bg-gray-100 transition duration-300">
+                    <i class="fas fa-globe mr-2"></i>Visit Website
+                </a>
+                <a href="#" class="block w-full bg-white/10 backdrop-blur-lg text-white py-4 px-6 rounded-xl font-semibold text-center hover:bg-white/20 transition duration-300">
+                    <i class="fas fa-address-card mr-2"></i>Save Contact
+                </a>
+                <a href="schedule.html" class="block w-full bg-white/10 backdrop-blur-lg text-white py-4 px-6 rounded-xl font-semibold text-center hover:bg-white/20 transition duration-300">
+                    <i class="fas fa-calendar-alt mr-2"></i>Schedule Meeting
+                </a>
+                <a href="#" class="block w-full bg-white/10 backdrop-blur-lg text-white py-4 px-6 rounded-xl font-semibold text-center hover:bg-white/20 transition duration-300">
+                    <i class="fas fa-envelope mr-2"></i>Send Email
+                </a>
+            </div>  
+        </main>
+
+        <!-- Footer -->
+        <footer class="p-4 text-center text-white/60 text-sm">
+            <p>Tap to connect</p>
+        </footer>
+    </div>
+
+    <!-- Add JavaScript for contact saving -->
+    <script>
+        // Contact information
+        const contact = {
+            name: 'John Doe',
+            title: 'Full Stack Developer',
+            email: 'john.doe@example.com',
+            phone: '+1234567890',
+            company: 'Your Company',
+            website: 'https://yourwebsite.com',
+            linkedin: 'https://linkedin.com/in/yourprofile'
+        };
+
+        // Function to save contact directly to phone contacts
+        async function saveContact() {
+            try {
+                // Check if the Contacts API is available
+                if ('contacts' in navigator && 'ContactsManager' in window) {
+                    const props = ['name', 'email', 'tel', 'url', 'organization'];
+                    const opts = { multiple: false };
+
+                    try {
+                        const contacts = await navigator.contacts.select(props, opts);
+                        // Contact was selected, now add our contact
+                        const newContact = {
+                            name: [contact.name],
+                            email: [{
+                                address: contact.email,
+                                type: 'work'
+                            }],
+                            tel: [{
+                                number: contact.phone,
+                                type: 'work'
+                            }],
+                            url: [{
+                                url: contact.website,
+                                type: 'work'
+                            }],
+                            organization: [contact.company]
+                        };
+
+                        // Add the contact
+                        await navigator.contacts.save(newContact);
+                        showToast('Contact saved successfully!');
+                    } catch (err) {
+                        console.error('Error saving contact:', err);
+                        // Fallback to vCard if direct save fails
+                        downloadVCard();
+                    }
+                } else {
+                    // Fallback to vCard for browsers that don't support Contacts API
+                    downloadVCard();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Failed to save contact. Please try again.');
+            }
+        }
+
+        // Fallback function to download vCard
+        function downloadVCard() {
+            try {
+                const vcard = `BEGIN:VCARD
+VERSION:3.0
+N:${contact.name.split(' ').reverse().join(';')}
+FN:${contact.name}
+TITLE:${contact.title}
+ORG:${contact.company}
+EMAIL;type=WORK,INTERNET:${contact.email}
+TEL;type=WORK,VOICE:${contact.phone}
+URL:${contact.website}
+URL;type=LINKEDIN:${contact.linkedin}
+NOTE:Digital Business Card
+END:VCARD`;
+
+                const blob = new Blob([vcard], { type: 'text/vcard' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${contact.name}.vcf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('Contact downloaded. Please import to your contacts.');
+            } catch (error) {
+                console.error('Error downloading vCard:', error);
+                showToast('Failed to download contact. Please try again.');
+            }
+        }
+
+        // Function to show toast message
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-6 py-3 rounded-full text-sm';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Add click handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            // Save Contact button
+            const saveContactBtn = document.querySelector('a:has(.fa-address-card)');
+            if (saveContactBtn) {
+                saveContactBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    saveContact();
+                });
+            }
+
+            // Visit Website button
+            const visitWebsiteBtn = document.querySelector('a:has(.fa-globe)');
+            if (visitWebsiteBtn) {
+                visitWebsiteBtn.href = contact.website;
+            }
+
+            // Send Email button
+            const sendEmailBtn = document.querySelector('a:has(.fa-envelope)');
+            if (sendEmailBtn) {
+                sendEmailBtn.href = `mailto:${contact.email}`;
+            }
+        });
+    </script>
+</body>
+</html> 
