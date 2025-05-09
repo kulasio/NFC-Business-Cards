@@ -10,7 +10,9 @@
     "build:css": "tailwindcss -i ./src/input.css -o ./public/css/style.css --watch"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "mongodb": "^6.16.0",
+    "mongoose": "^8.14.2"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",

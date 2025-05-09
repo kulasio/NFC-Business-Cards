@@ -168,6 +168,7 @@ END:VCARD`;
                 saveContactBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     saveContact();
+                    trackTap('Save Contact');
                 });
             }
 
@@ -175,14 +176,37 @@ END:VCARD`;
             const visitWebsiteBtn = document.querySelector('a:has(.fa-globe)');
             if (visitWebsiteBtn) {
                 visitWebsiteBtn.href = contact.website;
+                visitWebsiteBtn.addEventListener('click', function() {
+                    trackTap('Visit Website');
+                });
             }
 
             // Send Email button
             const sendEmailBtn = document.querySelector('a:has(.fa-envelope)');
             if (sendEmailBtn) {
                 sendEmailBtn.href = `mailto:${contact.email}`;
+                sendEmailBtn.addEventListener('click', function() {
+                    trackTap('Send Email');
+                });
+            }
+
+            // Schedule Meeting button
+            const scheduleMeetingBtn = document.querySelector('a:has(.fa-calendar-alt)');
+            if (scheduleMeetingBtn) {
+                scheduleMeetingBtn.addEventListener('click', function() {
+                    trackTap('Schedule Meeting');
+                });
             }
         });
+
+        // Function to track tap events
+        function trackTap(action) {
+            fetch('/api/track-tap', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action })
+            }).catch(err => console.error('Tap tracking failed:', err));
+        }
     </script>
 </body>
 </html> 
