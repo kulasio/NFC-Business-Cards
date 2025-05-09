@@ -10,10 +10,12 @@ const mongoUri = process.env.MONGODB_URI;
 const client = new MongoClient(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
 let db;
 
+const dbName = process.env.DB_NAME || 'nfc_taps';
+
 async function connectDB() {
     if (!db) {
         await client.connect();
-        db = client.db();
+        db = client.db(dbName);
         console.log('Connected to MongoDB Atlas');
     }
     return db;
