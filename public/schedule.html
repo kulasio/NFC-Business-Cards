@@ -22,11 +22,11 @@
                     <h2 class="text-2xl font-bold mb-6 text-center">Request a Meeting</h2>
                     <p class="text-center mb-6">Fill out the form below and we'll get back to you shortly</p>
                     
-                    <form id="meetingForm" class="space-y-6">
+                    <form id="meetingForm" class="space-y-6" action="https://formspree.io/f/yourformid" method="POST">
                         <!-- Name -->
                         <div>
                             <label class="block text-sm font-medium mb-2">Your Name</label>
-                            <input type="text" id="name" required
+                            <input type="text" id="name" name="name" required
                                 class="w-full bg-white/20 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white"
                                 placeholder="Enter your full name">
                         </div>
@@ -34,7 +34,7 @@
                         <!-- Email -->
                         <div>
                             <label class="block text-sm font-medium mb-2">Email Address</label>
-                            <input type="email" id="email" required
+                            <input type="email" id="email" name="email" required
                                 class="w-full bg-white/20 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white"
                                 placeholder="Enter your email">
                         </div>
@@ -42,7 +42,7 @@
                         <!-- Phone -->
                         <div>
                             <label class="block text-sm font-medium mb-2">Phone Number</label>
-                            <input type="tel" id="phone" required
+                            <input type="tel" id="phone" name="phone" required
                                 class="w-full bg-white/20 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white"
                                 placeholder="Enter your phone number">
                         </div>
@@ -50,7 +50,7 @@
                         <!-- Preferred Meeting Type -->
                         <div>
                             <label class="block text-sm font-medium mb-2">Preferred Meeting Type</label>
-                            <select id="meetingType" required
+                            <select id="meetingType" name="meetingType" required
                                 class="w-full bg-white text-gray-900 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white">
                                 <option value="">Select meeting type</option>
                                 <option value="video">Video Call</option>
@@ -66,14 +66,14 @@
                         <!-- Preferred Date -->
                         <div>
                             <label class="block text-sm font-medium mb-2">Preferred Date</label>
-                            <input type="date" id="preferredDate" required
+                            <input type="date" id="preferredDate" name="preferredDate" required
                                 class="w-full bg-white/20 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white">
                         </div>
 
                         <!-- Preferred Time -->
                         <div>
                             <label class="block text-sm font-medium mb-2">Preferred Time</label>
-                            <select id="preferredTime" required
+                            <select id="preferredTime" name="preferredTime" required
                                 class="w-full bg-white text-gray-900 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white">
                                 <option value="">Select preferred time</option>
                                 <option value="morning">Morning (9 AM - 12 PM)</option>
@@ -84,7 +84,7 @@
                         <!-- Meeting Purpose -->
                         <div>
                             <label class="block text-sm font-medium mb-2">Purpose of Meeting</label>
-                            <textarea id="purpose" rows="3" required
+                            <textarea id="purpose" name="purpose" rows="3" required
                                 class="w-full bg-white/20 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white"
                                 placeholder="Please describe what you'd like to discuss"></textarea>
                         </div>
@@ -114,13 +114,11 @@
         document.getElementById('meetingForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            // Show loading state
             const submitButton = this.querySelector('button[type="submit"]');
             const originalButtonText = submitButton.innerHTML;
             submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Submitting...';
             submitButton.disabled = true;
 
-            // Get form data
             const formData = {
                 name: document.getElementById('name').value,
                 email: document.getElementById('email').value,
@@ -132,34 +130,34 @@
             };
 
             try {
-                // Show success message
-                const successMessage = document.createElement('div');
-                successMessage.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-full text-sm z-50';
-                successMessage.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Request submitted successfully!';
-                document.body.appendChild(successMessage);
+                const response = await fetch('/api/send-meeting-request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
 
-                // Clear form
-                this.reset();
-
-                // Redirect after 2 seconds
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 2000);
+                if (response.ok) {
+                    const successMessage = document.createElement('div');
+                    successMessage.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-full text-sm z-50';
+                    successMessage.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Request submitted successfully!';
+                    document.body.appendChild(successMessage);
+                    this.reset();
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                } else {
+                    throw new Error('Failed to send request');
+                }
             } catch (error) {
                 console.error('Error submitting form:', error);
-                
-                // Show error message
                 const errorMessage = document.createElement('div');
                 errorMessage.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-full text-sm z-50';
                 errorMessage.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i> Failed to submit request. Please try again.';
                 document.body.appendChild(errorMessage);
-
-                // Remove error message after 3 seconds
                 setTimeout(() => {
                     errorMessage.remove();
                 }, 3000);
             } finally {
-                // Reset button state
                 submitButton.innerHTML = originalButtonText;
                 submitButton.disabled = false;
             }

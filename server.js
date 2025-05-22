@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
+const nodemailer = require('nodemailer');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -11,6 +12,15 @@ const client = new MongoClient(mongoUri, { useNewUrlParser: true, useUnifiedTopo
 let db;
 
 const dbName = process.env.DB_NAME || 'nfc_taps';
+
+// Nodemailer transporter setup
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
 
 async function connectDB() {
     if (!db) {
@@ -50,6 +60,23 @@ app.post('/api/track-tap', async (req, res) => {
     } catch (err) {
         console.error('Error tracking tap:', err);
         res.status(500).json({ success: false, error: 'Failed to track tap' });
+    }
+});
+
+app.post('/api/send-meeting-request', async (req, res) => {
+    const { name, email, phone, meetingType, preferredDate, preferredTime, purpose } = req.body;
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: 'nikko.mission099@gmail.com',
+        subject: 'New Meeting Request',
+        text: `You have a new meeting request:\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\nMeeting Type: ${meetingType}\nPreferred Date: ${preferredDate}\nPreferred Time: ${preferredTime}\nPurpose: ${purpose}`
+    };
+    try {
+        await transporter.sendMail(mailOptions);
+        res.status(200).json({ success: true, message: 'Request sent!' });
+    } catch (error) {
+        console.error('Error sending email:', error);
+        res.status(500).json({ success: false, error: 'Failed to send email' });
     }
 });
 
