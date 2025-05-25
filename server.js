@@ -57,7 +57,6 @@ app.post('/api/track-tap', async (req, res) => {
             userAgent: req.headers['user-agent'],
             ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
             action: req.body.action,
-            location: req.body.location || null,
             ...req.body
         };
         await db.collection('taps').insertOne(tapData);
