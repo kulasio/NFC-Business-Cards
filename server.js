@@ -117,6 +117,17 @@ app.get('/api/image/:id', async (req, res) => {
     }
 });
 
+app.get('/api/image-by-name/:name', async (req, res) => {
+    try {
+        const db = await connectDB();
+        const image = await db.collection('images').find({ name: req.params.name }).sort({ _id: -1 }).limit(1).toArray();
+        if (image.length === 0) return res.status(404).json({ error: 'Image not found' });
+        res.json({ id: image[0]._id });
+    } catch (err) {
+        res.status(500).json({ error: 'Error retrieving image by name' });
+    }
+});
+
 // Only start the server if we're not in a serverless environment
 if (process.env.NODE_ENV !== 'production') {
     app.listen(port, () => {

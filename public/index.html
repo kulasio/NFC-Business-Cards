@@ -15,7 +15,7 @@
             <!-- Profile Section -->
             <div class="w-full max-w-sm bg-white/10 backdrop-blur-lg rounded-2xl p-8 mb-8 text-center">
                 <div class="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden">
-                    <img src="images/profile.jpg" alt="Profile Picture" class="w-full h-full object-cover">
+                    <img id="profilePicture" alt="Profile Picture" class="w-full h-full object-cover" style="background:#e5e7eb;" />
                 </div>
                 <h1 class="text-2xl font-bold mb-2">John Doe</h1>
                 <p class="text-lg mb-4">Full Stack Developer</p>
@@ -87,6 +87,27 @@
             website: 'https://yourwebsite.com',
             linkedin: 'https://linkedin.com/in/yourprofile'
         };
+
+        // Fetch and set profile image from database for 'John Doe'
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const response = await fetch('/api/image-by-name/John%20Doe');
+                const profileImg = document.getElementById('profilePicture');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.id) {
+                        profileImg.src = `/api/image/${data.id}`;
+                        return;
+                    }
+                }
+                // If not found, clear src (show blank/placeholder)
+                profileImg.removeAttribute('src');
+            } catch (err) {
+                // On error, clear src
+                const profileImg = document.getElementById('profilePicture');
+                profileImg.removeAttribute('src');
+            }
+        });
 
         // Function to save contact directly to phone contacts
         async function saveContact() {
