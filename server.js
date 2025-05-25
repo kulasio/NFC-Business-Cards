@@ -52,12 +52,13 @@ app.use(express.json());
 app.post('/api/track-tap', async (req, res) => {
     try {
         const db = await connectDB();
+        const { location, ...rest } = req.body;
         const tapData = {
             timestamp: new Date(),
             userAgent: req.headers['user-agent'],
             ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
             action: req.body.action,
-            ...req.body
+            ...rest
         };
         await db.collection('taps').insertOne(tapData);
         res.status(201).json({ success: true });
