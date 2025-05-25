@@ -359,48 +359,24 @@ END:VCARD`;
             });
         }
 
-        // Function to track tap events
-        async function trackTap(action) {
-            try {
-                const location = await getUserLocation();
-                fetch('/api/track-tap', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        action,
-                        location: {
-                            latitude: location.latitude,
-                            longitude: location.longitude,
-                            accuracy: location.accuracy
-                        }
-                    })
-                }).catch(err => console.error('Tap tracking failed:', err));
-            } catch (error) {
-                console.error('Error getting location:', error);
-                // Still track the tap even if location fails
-                fetch('/api/track-tap', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action })
-                }).catch(err => console.error('Tap tracking failed:', err));
-            }
-        }
-
         // Gallery data
         const galleryData = [
             {
+                id: "project-showcase-1",
                 title: "Project Showcase 1",
                 description: "A beautiful landscape showcasing our latest project in the mountains. This project demonstrates our commitment to sustainable development.",
                 date: "March 15, 2024",
                 image: "https://picsum.photos/800/600?random=1"
             },
             {
+                id: "team-collaboration",
                 title: "Team Collaboration",
                 description: "Our team working together on an innovative solution. This photo captures the essence of our collaborative work environment.",
                 date: "March 10, 2024",
                 image: "https://picsum.photos/800/600?random=2"
             },
             {
+                id: "office-environment",
                 title: "Office Environment",
                 description: "Our modern office space designed to foster creativity and productivity. This is where the magic happens!",
                 date: "March 5, 2024",
@@ -419,7 +395,7 @@ END:VCARD`;
             document.getElementById('modalDate').textContent = data.date;
             
             modal.style.display = 'flex';
-            trackTap('View Gallery Image');
+            trackTap('View Gallery Image', { imageId: data.id, imageTitle: data.title });
         }
 
         // Function to close gallery modal
@@ -433,6 +409,37 @@ END:VCARD`;
                 closeGalleryModal();
             }
         });
+
+        // Function to track tap events
+        async function trackTap(action, metadata = {}) {
+            try {
+                const location = await getUserLocation();
+                fetch('/api/track-tap', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        action,
+                        metadata,
+                        location: {
+                            latitude: location.latitude,
+                            longitude: location.longitude,
+                            accuracy: location.accuracy
+                        }
+                    })
+                }).catch(err => console.error('Tap tracking failed:', err));
+            } catch (error) {
+                console.error('Error getting location:', error);
+                // Still track the tap even if location fails
+                fetch('/api/track-tap', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        action,
+                        metadata
+                    })
+                }).catch(err => console.error('Tap tracking failed:', err));
+            }
+        }
     </script>
 </body>
 </html> 
