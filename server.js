@@ -8,9 +8,6 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 const mongoUri = process.env.MONGODB_URI;
-const client = new MongoClient(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
-let db;
-
 const dbName = process.env.DB_NAME || 'nfc_taps';
 
 // Nodemailer transporter setup
@@ -22,12 +19,18 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+// MongoDB connection handling
+let cachedDb = null;
+
 async function connectDB() {
-    if (!db) {
-        await client.connect();
-        db = client.db(dbName);
-        console.log('Connected to MongoDB Atlas');
+    if (cachedDb) {
+        return cachedDb;
     }
+
+    const client = new MongoClient(mongoUri);
+    await client.connect();
+    const db = client.db(dbName);
+    cachedDb = db;
     return db;
 }
 
@@ -53,6 +56,8 @@ app.post('/api/track-tap', async (req, res) => {
             timestamp: new Date(),
             userAgent: req.headers['user-agent'],
             ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+            action: req.body.action,
+            location: req.body.location || null,
             ...req.body
         };
         await db.collection('taps').insertOne(tapData);
@@ -80,6 +85,11 @@ app.post('/api/send-meeting-request', async (req, res) => {
     }
 });
 
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-}); 
+// Only start the server if we're not in a serverless environment
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(port, () => {
+        console.log(`Server is running on http://localhost:${port}`);
+    });
+}
+
+module.exports = app; 

@@ -199,13 +199,59 @@ END:VCARD`;
             }
         });
 
+        // Function to get user's location
+        async function getUserLocation() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('Geolocation is not supported by your browser'));
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        resolve({
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                            accuracy: position.coords.accuracy
+                        });
+                    },
+                    (error) => {
+                        reject(error);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 5000,
+                        maximumAge: 0
+                    }
+                );
+            });
+        }
+
         // Function to track tap events
-        function trackTap(action) {
-            fetch('/api/track-tap', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action })
-            }).catch(err => console.error('Tap tracking failed:', err));
+        async function trackTap(action) {
+            try {
+                const location = await getUserLocation();
+                fetch('/api/track-tap', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        action,
+                        location: {
+                            latitude: location.latitude,
+                            longitude: location.longitude,
+                            accuracy: location.accuracy
+                        }
+                    })
+                }).catch(err => console.error('Tap tracking failed:', err));
+            } catch (error) {
+                console.error('Error getting location:', error);
+                // Still track the tap even if location fails
+                fetch('/api/track-tap', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action })
+                }).catch(err => console.error('Tap tracking failed:', err));
+            }
         }
     </script>
 </body>
