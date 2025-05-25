@@ -55,9 +55,46 @@
             </div>  
         </main>
 
+        <!-- Gallery Section -->
+        <div class="w-full max-w-sm mx-auto px-6 mb-8">
+            <h2 class="text-xl font-bold text-white mb-4">Gallery</h2>
+            <div class="grid grid-cols-3 gap-4">
+                <!-- Picture Box 1 -->
+                <div class="bg-white/10 backdrop-blur-lg rounded-xl overflow-hidden aspect-square cursor-pointer hover:bg-white/20 transition duration-300" onclick="openGalleryModal(0)">
+                    <img src="https://picsum.photos/300/300?random=1" alt="Gallery Image 1" class="w-full h-full object-cover" />
+                </div>
+                <!-- Picture Box 2 -->
+                <div class="bg-white/10 backdrop-blur-lg rounded-xl overflow-hidden aspect-square cursor-pointer hover:bg-white/20 transition duration-300" onclick="openGalleryModal(1)">
+                    <img src="https://picsum.photos/300/300?random=2" alt="Gallery Image 2" class="w-full h-full object-cover" />
+                </div>
+                <!-- Picture Box 3 -->
+                <div class="bg-white/10 backdrop-blur-lg rounded-xl overflow-hidden aspect-square cursor-pointer hover:bg-white/20 transition duration-300" onclick="openGalleryModal(2)">
+                    <img src="https://picsum.photos/300/300?random=3" alt="Gallery Image 3" class="w-full h-full object-cover" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Gallery Modal -->
+        <div id="galleryModal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50" style="display:none;">
+            <div class="bg-white rounded-xl p-6 w-full max-w-lg mx-4">
+                <div class="relative">
+                    <button onclick="closeGalleryModal()" class="absolute -top-2 -right-2 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100">
+                        <i class="fas fa-times text-gray-600"></i>
+                    </button>
+                    <img id="modalImage" src="" alt="Gallery Image" class="w-full h-64 object-cover rounded-lg mb-4" />
+                    <h3 id="modalTitle" class="text-xl font-bold text-gray-800 mb-2"></h3>
+                    <p id="modalDescription" class="text-gray-600 mb-4"></p>
+                    <div class="flex items-center text-sm text-gray-500">
+                        <i class="fas fa-calendar-alt mr-2"></i>
+                        <span id="modalDate"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Footer -->
         <footer class="p-4 text-center text-white/60 text-sm">
-            <p>Tap to connect</p>
+            <p>Made with <3 by Nikko Mission</p>
         </footer>
     </div>
 
@@ -348,6 +385,54 @@ END:VCARD`;
                 }).catch(err => console.error('Tap tracking failed:', err));
             }
         }
+
+        // Gallery data
+        const galleryData = [
+            {
+                title: "Project Showcase 1",
+                description: "A beautiful landscape showcasing our latest project in the mountains. This project demonstrates our commitment to sustainable development.",
+                date: "March 15, 2024",
+                image: "https://picsum.photos/800/600?random=1"
+            },
+            {
+                title: "Team Collaboration",
+                description: "Our team working together on an innovative solution. This photo captures the essence of our collaborative work environment.",
+                date: "March 10, 2024",
+                image: "https://picsum.photos/800/600?random=2"
+            },
+            {
+                title: "Office Environment",
+                description: "Our modern office space designed to foster creativity and productivity. This is where the magic happens!",
+                date: "March 5, 2024",
+                image: "https://picsum.photos/800/600?random=3"
+            }
+        ];
+
+        // Function to open gallery modal
+        function openGalleryModal(index) {
+            const modal = document.getElementById('galleryModal');
+            const data = galleryData[index];
+            
+            document.getElementById('modalImage').src = data.image;
+            document.getElementById('modalTitle').textContent = data.title;
+            document.getElementById('modalDescription').textContent = data.description;
+            document.getElementById('modalDate').textContent = data.date;
+            
+            modal.style.display = 'flex';
+            trackTap('View Gallery Image');
+        }
+
+        // Function to close gallery modal
+        function closeGalleryModal() {
+            document.getElementById('galleryModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('galleryModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeGalleryModal();
+            }
+        });
     </script>
 </body>
 </html> 
