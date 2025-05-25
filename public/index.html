@@ -49,6 +49,9 @@
                 <a href="#" class="block w-full bg-white/10 backdrop-blur-lg text-white py-4 px-6 rounded-xl font-semibold text-center hover:bg-white/20 transition duration-300">
                     <i class="fas fa-envelope mr-2"></i>Send Email
                 </a>
+                <button id="uploadImageBtn" class="block w-full bg-white/10 backdrop-blur-lg text-white py-4 px-6 rounded-xl font-semibold text-center hover:bg-white/20 transition duration-300">
+                    <i class="fas fa-upload mr-2"></i>Upload Image
+                </button>
             </div>  
         </main>
 
@@ -56,6 +59,19 @@
         <footer class="p-4 text-center text-white/60 text-sm">
             <p>Tap to connect</p>
         </footer>
+    </div>
+
+    <!-- Upload Image Modal -->
+    <div id="uploadModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50" style="display:none;">
+      <div class="bg-white rounded-xl p-8 w-full max-w-xs text-center">
+        <h2 class="text-lg font-bold mb-4 text-primary">Upload a Picture</h2>
+        <input type="file" id="modalImageInput" accept="image/*" class="mb-4 w-full" />
+        <div class="flex justify-center space-x-2">
+          <button id="modalUploadBtn" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/80">Upload</button>
+          <button id="modalCancelBtn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+        </div>
+        <div id="modalUploadStatus" class="mt-4 text-sm"></div>
+      </div>
     </div>
 
     <!-- Add JavaScript for contact saving -->
@@ -195,6 +211,54 @@ END:VCARD`;
             if (scheduleMeetingBtn) {
                 scheduleMeetingBtn.addEventListener('click', function() {
                     trackTap('Schedule Meeting');
+                });
+            }
+
+            // Upload Image button and modal logic
+            const uploadImageBtn = document.getElementById('uploadImageBtn');
+            const uploadModal = document.getElementById('uploadModal');
+            const modalImageInput = document.getElementById('modalImageInput');
+            const modalUploadBtn = document.getElementById('modalUploadBtn');
+            const modalCancelBtn = document.getElementById('modalCancelBtn');
+            const modalUploadStatus = document.getElementById('modalUploadStatus');
+
+            if (uploadImageBtn && uploadModal && modalImageInput && modalUploadBtn && modalCancelBtn) {
+                uploadImageBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    uploadModal.style.display = 'flex';
+                    modalImageInput.value = '';
+                    modalUploadStatus.textContent = '';
+                });
+
+                modalCancelBtn.addEventListener('click', function() {
+                    uploadModal.style.display = 'none';
+                });
+
+                modalUploadBtn.addEventListener('click', async function() {
+                    if (modalImageInput.files.length > 0) {
+                        const formData = new FormData();
+                        formData.append('image', modalImageInput.files[0]);
+                        modalUploadStatus.textContent = 'Uploading...';
+                        try {
+                            const response = await fetch('/api/upload-image', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            if (response.ok) {
+                                modalUploadStatus.textContent = 'Image uploaded successfully!';
+                                showToast('Image uploaded successfully!');
+                                setTimeout(() => {
+                                    uploadModal.style.display = 'none';
+                                }, 1200);
+                            } else {
+                                modalUploadStatus.textContent = 'Failed to upload image.';
+                            }
+                        } catch (error) {
+                            modalUploadStatus.textContent = 'Error uploading image.';
+                        }
+                    } else {
+                        modalUploadStatus.textContent = 'Please select an image.';
+                    }
                 });
             }
         });

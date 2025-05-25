@@ -3,6 +3,8 @@ const path = require('path');
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
 const nodemailer = require('nodemailer');
+const multer = require('multer');
+const { ObjectId } = require('mongodb');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -82,6 +84,36 @@ app.post('/api/send-meeting-request', async (req, res) => {
     } catch (error) {
         console.error('Error sending email:', error);
         res.status(500).json({ success: false, error: 'Failed to send email' });
+    }
+});
+
+const upload = multer();
+
+// Upload image endpoint
+app.post('/api/upload-image', upload.single('image'), async (req, res) => {
+    try {
+        const db = await connectDB();
+        const imageDoc = {
+            name: req.body.name || 'Untitled',
+            img: req.file.buffer, // Store image as Buffer
+            contentType: req.file.mimetype
+        };
+        const result = await db.collection('images').insertOne(imageDoc);
+        res.status(201).json({ success: true, id: result.insertedId });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Failed to upload image' });
+    }
+});
+
+app.get('/api/image/:id', async (req, res) => {
+    try {
+        const db = await connectDB();
+        const image = await db.collection('images').findOne({ _id: new ObjectId(req.params.id) });
+        if (!image) return res.status(404).send('Image not found');
+        res.set('Content-Type', image.contentType);
+        res.send(image.img);
+    } catch (err) {
+        res.status(500).send('Error retrieving image');
     }
 });
 
