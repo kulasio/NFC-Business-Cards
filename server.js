@@ -111,7 +111,7 @@ app.get('/api/image/:id', async (req, res) => {
         const image = await db.collection('images').findOne({ _id: new ObjectId(req.params.id) });
         if (!image) return res.status(404).send('Image not found');
         res.set('Content-Type', image.contentType);
-        res.send(image.img);
+        res.end(image.img.buffer, 'binary');
     } catch (err) {
         res.status(500).send('Error retrieving image');
     }
