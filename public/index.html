@@ -65,6 +65,7 @@
     <div id="uploadModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50" style="display:none;">
       <div class="bg-white rounded-xl p-8 w-full max-w-xs text-center">
         <h2 class="text-lg font-bold mb-4 text-primary">Upload a Picture</h2>
+        <input type="text" id="modalUsernameInput" placeholder="Enter username (required)" class="mb-4 w-full px-3 py-2 border border-gray-300 rounded" required />
         <input type="file" id="modalImageInput" accept="image/*" class="mb-4 w-full" />
         <div class="flex justify-center space-x-2">
           <button id="modalUploadBtn" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/80">Upload</button>
@@ -218,15 +219,17 @@ END:VCARD`;
             const uploadImageBtn = document.getElementById('uploadImageBtn');
             const uploadModal = document.getElementById('uploadModal');
             const modalImageInput = document.getElementById('modalImageInput');
+            const modalUsernameInput = document.getElementById('modalUsernameInput');
             const modalUploadBtn = document.getElementById('modalUploadBtn');
             const modalCancelBtn = document.getElementById('modalCancelBtn');
             const modalUploadStatus = document.getElementById('modalUploadStatus');
 
-            if (uploadImageBtn && uploadModal && modalImageInput && modalUploadBtn && modalCancelBtn) {
+            if (uploadImageBtn && uploadModal && modalImageInput && modalUsernameInput && modalUploadBtn && modalCancelBtn) {
                 uploadImageBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     uploadModal.style.display = 'flex';
                     modalImageInput.value = '';
+                    modalUsernameInput.value = '';
                     modalUploadStatus.textContent = '';
                 });
 
@@ -235,9 +238,16 @@ END:VCARD`;
                 });
 
                 modalUploadBtn.addEventListener('click', async function() {
+                    const username = modalUsernameInput.value.trim();
+                    if (!username) {
+                        modalUploadStatus.textContent = 'Username is required.';
+                        modalUsernameInput.focus();
+                        return;
+                    }
                     if (modalImageInput.files.length > 0) {
                         const formData = new FormData();
                         formData.append('image', modalImageInput.files[0]);
+                        formData.append('name', username);
                         modalUploadStatus.textContent = 'Uploading...';
                         try {
                             const response = await fetch('/api/upload-image', {
