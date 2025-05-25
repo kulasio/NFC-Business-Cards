@@ -27,11 +27,22 @@ async function connectDB() {
         return cachedDb;
     }
 
-    const client = new MongoClient(mongoUri);
-    await client.connect();
-    const db = client.db(dbName);
-    cachedDb = db;
-    return db;
+    try {
+        if (!mongoUri) {
+            throw new Error('MongoDB URI is not defined. Please check your .env file.');
+        }
+
+        const client = new MongoClient(mongoUri);
+        await client.connect();
+        console.log('Successfully connected to MongoDB Atlas');
+        
+        const db = client.db(dbName);
+        cachedDb = db;
+        return db;
+    } catch (error) {
+        console.error('MongoDB connection error:', error);
+        throw error;
+    }
 }
 
 // Serve static files from the public directory
